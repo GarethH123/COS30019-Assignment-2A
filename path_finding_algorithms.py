@@ -471,40 +471,47 @@ class GraphProblem(Problem):
 
 
 def runGraphSeacrh():
-
     # Extract test file and method from CLI arguments
     filename = sys.argv[1]
     method = sys.argv[2]
 
-    # Extract from file and pass into GraphProblem constructor
-    graph_map, origin, dest = load_graph_from_file(filename)
-    prob = GraphProblem(origin, dest, graph_map)
+    # Load graph and extract info
+    graph_map, origin, destinations = load_graph_from_file(filename)
 
-    # Initialize result variables
-    result = None
-    path = list()
-    no_nodes_explored = 0
+    # Loop over each destination
+    for goal in destinations:
+        prob = GraphProblem(origin, goal, graph_map)
 
-    # Check for method used
-    if method == "DFS":
-        result, no_nodes_explored = depth_first_graph_search(prob)      
-    elif method == "BFS":
-        result, no_nodes_explored = breadth_first_graph_search(prob)
-    elif method == "GBFS":
-        result, no_nodes_explored = best_first_graph_search(prob, lambda n: prob.h(n), display=True)
-    elif method == "AS":
-        result, no_nodes_explored = astar_search(prob, lambda n: prob.h(n), display=True)
+        result = None
+        path = []
+        no_nodes_explored = 0
 
-    # Extract solution path
-    for p in result.path():
-        path.append(p.state)
+        # Run the selected search method
+        if method == "DFS":
+            result, no_nodes_explored = depth_first_graph_search(prob)
+        elif method == "BFS":
+            result, no_nodes_explored = breadth_first_graph_search(prob)
+        elif method == "GBFS":
+            result, no_nodes_explored = best_first_graph_search(prob, lambda n: prob.h(n), display=True)
+        elif method == "AS":
+            result, no_nodes_explored = astar_search(prob, lambda n: prob.h(n), display=True)
+        else:
+            print(f"Unknown method: {method}")
+            continue
 
-    # Show in CLI
-    print(f"{filename} {method}\n{result.solution()[-1]} {no_nodes_explored}\n{path}")
+        # Handle result
+        if result:
+            path = [node.state for node in result.path()]
 
-    # Draw the solution
-    draw_solution(graph_map, origin, dest, path, f"Solutions for {filename.removesuffix(".txt")} based on {method}")
+            print(f"{filename} {method}")
+            print(f"{result.state} {no_nodes_explored}")
+            print(path)
+
+            draw_solution(graph_map, origin, [goal], path, f"{method} Path to {goal}")
+        else:
+            print(f"No path found to {goal}")
 
 
+# Run it
 runGraphSeacrh()
 
